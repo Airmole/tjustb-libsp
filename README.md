@@ -1,6 +1,6 @@
 # tjustb-libsp
 
-天津科技大学（USTB）图书馆 `libsp` 系统的 PHP HTTP Client。
+TJUSTB 图书馆 `libsp` 系统的 PHP HTTP Client。
 
 该库对常用检索、热门借阅、最新图书、馆藏详情等接口做了封装，默认请求地址为：
 
