@@ -37,12 +37,13 @@ class Popular extends Base
             'page' => $page,
             'rows' => $rows,
             'disCode' => $disCode,
-            'statRange' => $statRange,
-            'indexFlag' => $indexFlag,
             'libCode' => $libCode,
+            'statRange' => $statRange,
             'sortType' => $sortType,
-            'classNo' => $classNo
         ];
+        if ($indexFlag == 1) $body['indexFlag'] = $indexFlag;
+        if (!empty($classNo)) $body['classNo'] = $classNo;
+
         $result = $this->httpRequest('POST', '/find/index/getHotLoan', $body);
         if ($result['code'] !== 200) throw new Exception('获取失败：' . $result['code'] . $result['data']);
         return json_decode($result['data'], true);
