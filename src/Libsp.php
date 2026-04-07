@@ -83,7 +83,7 @@ class Libsp extends Base
      * @param int $rows 每页条数
      * @param string|null $disCode 学科分类，参数值取自disCodeList()
      * @param int $statRange 统计范围天数
-     * @param int $indexFlag
+     * @param int $indexFlag 是否首页请求
      * @param string $libCode 图书馆代码，本校值为20096000001，空字符串匹配全部
      * @param int $sortType 排序方式，1-按借阅次数，2-按借阅比
      * @param string $classNo
