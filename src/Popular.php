@@ -15,6 +15,13 @@ class Popular extends Base
         return json_decode($result['data'], true);
     }
 
+    public function disCodeList(): array
+    {
+        $result = $this->httpRequest('GET', '/find/index/getDiscipline?disCode=');
+        if ($result['code'] !== 200) throw new Exception('获取失败：' . $result['code'] . $result['data']);
+        return json_decode($result['data'], true);
+    }
+
     public function getHotBorrow(
         int $page = 1,
         int $rows = 10,
@@ -44,15 +51,33 @@ class Popular extends Base
     public function getNewBook(
         int $page = 1,
         int $rows = 10,
+        string $disCode = '',
+        string $callNo = '',
+        string $sortField = 'in_date',
+        string $sortClause = 'desc',
         string $time = "2",
+        string $searchWord = '',
         string $docCode = "1",
+        array $campusId = [],
+        string $libCode = '',
+        string $locationId = '',
+        string $opacSearchLangCode = ''
     )
     {
         $body = [
             'page' => $page,
             'rows' => $rows,
+            'disCode' => $disCode,
+            'callNo' => $callNo,
+            'sortField' => $sortField,
+            'sortClause' => $sortClause,
             'time' => $time,
             'docCode' => $docCode,
+            'campusId' => $campusId,
+            'libCode' => $libCode,
+            'locationId' => $locationId,
+            'opacSearchLangCode' => $opacSearchLangCode,
+            'searchWord' => $searchWord
         ];
         $headers = ["Referer: {$this->libspUrl}/"];
         $result = $this->httpRequest('POST', '/find/index/getNewBook', $body,'', $headers);

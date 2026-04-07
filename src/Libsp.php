@@ -7,7 +7,8 @@ use Airmole\TjustbOpacsys\Exception\Exception;
 class Libsp extends Base
 {
     /**
-     * 获取字典
+     * 获取数据字典
+     * @see https://gist.github.com/Airmole/147443e2f1ed0222769f033794e6fb09
      * @return array
      * @throws Exception
      */
@@ -65,16 +66,28 @@ class Libsp extends Base
     }
 
     /**
+     * 获取disCode列表
+     * disCode 疑似学科分类
+     * @return array
+     * @throws Exception
+     */
+    public function disCodeList(): array
+    {
+        $popular = new Popular();
+        return $popular->disCodeList();
+    }
+
+    /**
      * 获取热门借阅
-     * @param int $page
-     * @param int $rows
-     * @param string|null $disCode
-     * @param int $statRange
+     * @param int $page 页码
+     * @param int $rows 每页条数
+     * @param string|null $disCode 学科分类，参数值取自disCodeList()
+     * @param int $statRange 统计范围天数
      * @param int $indexFlag
-     * @param string $libCode
-     * @param int $sortType
+     * @param string $libCode 图书馆代码，本校值为20096000001，空字符串匹配全部
+     * @param int $sortType 排序方式，1-按借阅次数，2-按借阅比
      * @param string $classNo
-     * @return mixed
+     * @return array
      * @throws Exception
      */
     public function getHotBorrow(
@@ -94,24 +107,55 @@ class Libsp extends Base
 
     /**
      * 获取最新图书
-     * @param int $page
-     * @param int $rows
-     * @param string $time
-     * @param string $docCode
+     * @param int $page 页码
+     * @param int $rows 每页条数
+     * @param string $disCode 学科分类号
+     * @param string $callNo 中图分类号
+     * @param string $sortField 排序字段
+     * @param string $sortClause 排序规则
+     * @param string $time 时间范围：1-近一周，2-近一月，3-近两月，4-近三月，5-近半年，6-近一年，7-近两年
+     * @param string $searchWord
+     * @param string $docCode 文档类型，1-图书，2-期刊...详见dict接口
+     * @param array $campusId 校区ID筛选
+     * @param string $libCode 图书馆筛选
+     * @param string $locationId 藏书地筛选
+     * @param string $opacSearchLangCode
      * @return array
      * @throws Exception
      */
     public function getNewBook(
         int $page = 1,
         int $rows = 10,
+        string $disCode = '',
+        string $callNo = '',
+        string $sortField = 'in_date',
+        string $sortClause = 'desc',
         string $time = "2",
+        string $searchWord = '',
         string $docCode = "1",
+        array $campusId = [],
+        string $libCode = '',
+        string $locationId = '',
+        string $opacSearchLangCode = ''
     ): array
     {
         $popular = new Popular();
-        return $popular->getNewBook($page, $rows, $time, $docCode);
+        return $popular->getNewBook(
+            $page,
+            $rows,
+            $disCode,
+            $callNo,
+            $sortField,
+            $sortClause,
+            $time,
+            $searchWord,
+            $docCode,
+            $campusId,
+            $libCode,
+            $locationId,
+            $opacSearchLangCode
+        );
     }
-
 
     /**
      * 获取搜索参数（OPAC）

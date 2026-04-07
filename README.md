@@ -83,10 +83,12 @@ OPACSYS_TIMEOUT=10
 
 ### 基础与字典
 
-- `dict()` 获取字典数据
+- `dict()` 获取数据字典定义
 - `locationList($page = 1, $rows = 2000, $locationName = '', $campusIds = [], $locationTypeCodes = [], $entrust = 0, $subscribe = 0)` 获取馆藏地点列表
 - `conditionList()` 获取检索条件列表
 - `opacSearchPara()` 获取 OPAC 检索参数
+
+> 不清楚的参数值都可以从数据字典接口中获取定义
 
 ### 热门与推荐
 
