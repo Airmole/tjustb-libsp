@@ -95,7 +95,7 @@ class Libsp extends Base
         int $rows = 10,
         string $disCode = null,
         int $statRange = 30,
-        int $indexFlag = 1,
+        int $indexFlag = 0,
         string $libCode = '',
         int $sortType = 1,
         string $classNo = ''
