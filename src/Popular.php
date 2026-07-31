@@ -2,7 +2,7 @@
 
 namespace Airmole\TjustbLibsp;
 
-use Airmole\TjustbOpacsys\Exception\Exception;
+use Airmole\TjustbLibsp\Exception\Exception;
 
 class Popular extends Base
 {

@@ -10,6 +10,12 @@ class Base
      * @var string 默认libsp系统URL
      */
     public const DEFAULT_LIBSP_URL = 'https://findtjustb.libsp.cn';
+
+    /**
+     * @var string libsp系统超星统一登录认证服务URL
+     */
+    public const LOGIN_SERVICE_URL = 'https://tyrzfw.chaoxing.com';
+
     /**
      * @var string libsp系统 URL域名
      */
@@ -34,6 +40,16 @@ class Base
     public string $cookie;
 
     /**
+     * @var array 用户cookie数组
+     */
+    public array $cookieArray;
+
+    /**
+     * @var array 超星cookie数组
+     */
+    public array $chaoxingCookieArray;
+
+    /**
      * @var int 默认请求成功响应代码
      */
     public const CODE_SUCCESS = 200;
@@ -53,7 +69,7 @@ class Base
         $this->proxy = $this->getConfig('LIBSP_PROXY', '');
 
         // 获取cookie
-        $this->getCookie();
+        $this->getNewCookie();
     }
 
     /**
@@ -139,13 +155,19 @@ class Base
             'Sec-Fetch-Site: same-origin',
             'Sec-Fetch-Mode: cors',
             'Sec-Fetch-Dest: empty',
-            'Content-Type: application/json;charset=UTF-8'
+            'Content-Type: application/json;charset=UTF-8',
+            'Referer: https://findtjustb.libsp.cn/'
         ];
         $headers = array_merge($defaultHeaders, $headers);
 
         if (is_string($cookie) && !empty($cookie)) {
             $cookie = trim($cookie);
             $headers[] = !str_starts_with($cookie, 'Cookie:') ? "Cookie: {$cookie}" : $cookie;
+
+            // 请求libsp系统cookie中携带有jwt值，则header需增加jwtOpacAuth
+            if (array_key_exists('jwt', $this->parseCookieString($cookie)) && str_contains($url, self::DEFAULT_LIBSP_URL)) {
+                $headers[] = "jwtOpacAuth: " . ($this->parseCookieString($cookie))['jwt'];
+            }
         }
 
         $timeout = (int)$this->getConfig('OPACSYS_TIMEOUT', $timeout);
@@ -216,13 +238,119 @@ class Base
      * 获取cookie
      * @return string
      */
-    public function getCookie(): string
+    public function getNewCookie(): string
     {
         $headers = ["Referer: {$this->libspUrl}/"];
         $result = $this->httpRequest('GET', '/find/findConfig/getMenuList','', '', $headers, true);
         $cookie = $this->getCookieFromHeader('route', $result['data']);
-        $cookie = "route={$cookie}";
-        $this->cookie = $cookie;
-        return $cookie;
+
+        $this->insertCookie('route', $cookie);
+        return $this->getCookieString();
     }
+
+    /**
+     * 插入cookie
+     * @param string $key cookie名称
+     * @param string $value cookie值
+     * @return void
+     */
+    public function insertCookie(string $key, string $value): void
+    {
+        $this->cookieArray[$key] = $value;
+        $this->cookie = $this->getCookieString($this->cookieArray);
+    }
+
+    /**
+     * 获取Cookie字符串
+     * @param array $cookie Cookie数组
+     * @return string Cookie字符串
+     */
+    public function getCookieString(array $cookie = []): string
+    {
+        if (empty($cookie)) $cookie = $this->cookieArray;
+        $tempArray = [];
+        foreach ($cookie as $key => $value) {
+            $tempArray[] = $key . '=' . $value;
+        }
+        return implode('; ', $tempArray);
+    }
+
+    /**
+     * 解析Cookie字符串
+     * @param string $cookieString Cookie字符串
+     * @return array Cookie数组
+     */
+    public function parseCookieString(string $cookieString = ''): array
+    {
+        if (str_starts_with($cookieString, 'Cookie: ')) $cookieString = substr($cookieString, 8);
+
+        $cookieArray = [];
+        $cookiePairs = explode(';', $cookieString);
+        foreach ($cookiePairs as $pair) {
+            $pair = trim($pair);
+            $pos = strpos($pair, '=');
+            if ($pos === false) continue;
+            $cookieArray[trim(substr($pair, 0, $pos))] = trim(substr($pair, $pos + 1));
+        }
+        $this->cookieArray = $cookieArray;
+        $this->cookie = $this->getCookieString($cookieArray);
+        return $cookieArray;
+    }
+
+    /**
+     * 解析Cookie数组
+     * @param array $cookie Cookie数组
+     * @return string Cookie字符串
+     */
+    public function parseCookieArray(array $cookie = []): string
+    {
+        $this->cookieArray = $cookie;
+        $this->cookie = $this->getCookieString($cookie);
+        return $this->cookie;
+    }
+
+    /**
+     * 插入超星cookie
+     * @param string $key
+     * @param string $value
+     * @return void
+     */
+    public function insertChaoxingCookie(string $key, string $value): void
+    {
+        $this->chaoxingCookieArray[$key] = $value;
+    }
+
+    /**
+     * 获取超星Cookie字符串
+     * @param array $chaoxingCookieArray 超星Cookie数组
+     * @return string Cookie字符串
+     */
+    public function getChaoxingCookieString(array $chaoxingCookieArray = []): string
+    {
+        if (empty($chaoxingCookieArray)) $chaoxingCookieArray = $this->chaoxingCookieArray;
+        $tempArray = [];
+        foreach ($chaoxingCookieArray as $key => $value) {
+            $tempArray[] = $key . '=' . $value;
+        }
+        return implode('; ', $tempArray);
+    }
+
+    /**
+     * 解析unicode字符串
+     * @param string $str
+     * @return string
+     */
+    function unicode2utf8(string $str): string
+    {
+        if(!$str) return '';
+        $decode = json_decode($str);
+        if($decode) return $decode;
+        $str = '["' . $str . '"]';
+        $decode = json_decode($str);
+        if(count($decode) == 1){
+            return $decode[0];
+        }
+        return $str;
+    }
+
 }
