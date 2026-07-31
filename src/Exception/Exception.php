@@ -1,6 +1,6 @@
 <?php
 
-namespace Airmole\TjustbOpacsys\Exception;
+namespace Airmole\TjustbLibsp\Exception;
 
 class Exception extends \Exception
 {
