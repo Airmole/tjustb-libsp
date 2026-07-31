@@ -2,7 +2,7 @@
 
 namespace Airmole\TjustbLibsp;
 
-use Airmole\TjustbOpacsys\Exception\Exception;
+use Airmole\TjustbLibsp\Exception\Exception;
 
 class Libsp extends Base
 {
@@ -590,6 +590,267 @@ class Libsp extends Base
     {
         $search = new Search();
         return $search->categoryList($parentClassNo, $classLev, $classCode);
+    }
+
+    /**
+     * SSO登录
+     * @param string $ticket
+     * @return array
+     * @throws Exception
+     */
+    public function ssoLogin(string $ticket): array
+    {
+        $login = new Login();
+        return $login->ssoLogin($ticket);
+    }
+
+    /**
+     * 获取用户信息
+     * @param array $cookie
+     * @return array
+     * @throws Exception
+     * @see https://gist.github.com/Airmole/3d75f1563f55cd12c11dfa5ca869a571
+     */
+    public function userInfo(array $cookie = []): array
+    {
+        $login = new Login();
+        $login->cookie = $this->cookie;
+        $login->cookieArray = $this->cookieArray;
+        return $login->userInfo($cookie);
+    }
+
+    /**
+     * 获取userLimit数据
+     * 请求到书、借书超期、未处理行为
+     * @param string $userId
+     * @return array
+     * @throws Exception
+     */
+    public function userLimit(string $userId = ''): array
+    {
+        $user = new User();
+        $user->cookie = $this->cookie;
+        $user->cookieArray = $this->cookieArray;
+        return $user->userLimit($userId);
+    }
+
+    /**
+     * 获取用户信息
+     * @return array
+     * @throws Exception
+     */
+    public function getUserInfo(): array
+    {
+        $user = new User();
+        $user->cookie = $this->cookie;
+        $user->cookieArray = $this->cookieArray;
+        return $user->getUserInfo();
+    }
+
+    /**
+     * 获取读者积分列表
+     * @param int $page 页码
+     * @param int $rows 每页条数
+     * @param int|null $scoreSign 积分类型：null-全部；0-加分；1-减分
+     * @param string $startDate 开始日期
+     * @param string $endDate 结束日期
+     * @param string|null $timeType 时间类型
+     * @return array
+     * @throws Exception
+     */
+    public function getPatronScoreList(
+        int $page = 1,
+        int $rows = 10,
+        int $scoreSign = null,
+        string $startDate = '',
+        string $endDate = '',
+        string $timeType = null,
+    ): array
+    {
+        $score = new Score();
+        $score->cookie = $this->cookie;
+        $score->cookieArray = $this->cookieArray;
+        return $score->getPatronScoreList($page, $rows, $scoreSign, $startDate, $endDate, $timeType);
+    }
+
+    /**
+     * 每日图书推荐
+     * @return array
+     * @throws Exception
+     */
+    public function dailyRecommend(): array
+    {
+        $user = new User();
+        $user->cookie = $this->cookie;
+        $user->cookieArray = $this->cookieArray;
+        return $user->dailyRecommend();
+    }
+
+    /**
+     * 获取借阅统计
+     * @return array
+     * @throws Exception
+     */
+    public function loanChart(): array
+    {
+        $user = new User();
+        $user->cookie = $this->cookie;
+        $user->cookieArray = $this->cookieArray;
+        return $user->loanChart();
+    }
+
+    /**
+     * 获取借阅规则
+     * @return array
+     * @throws Exception
+     */
+    public function userLoanRules(): array
+    {
+        $user = new User();
+        $user->cookie = $this->cookie;
+        $user->cookieArray = $this->cookieArray;
+        return $user->userLoanRules();
+    }
+
+    /**
+     * 获取收藏书单
+     * @param int $page 页码
+     * @param int $rows 每页条数
+     * @param int $type 书单类型：0-读者发布；1-公共书单
+     * @return array
+     * @throws Exception
+     */
+    public function favBookList(int $page = 1, int $rows = 10, int $type = 1): array
+    {
+        $bookList = new BookList();
+        $bookList->cookie = $this->cookie;
+        $bookList->cookieArray = $this->cookieArray;
+        return $bookList->favBookList($page, $rows, $type);
+    }
+
+    /**
+     * 获取我的书单
+     * @return array
+     * @throws Exception
+     */
+    public function myBookList(): array
+    {
+        $bookList = new BookList();
+        $bookList->cookie = $this->cookie;
+        $bookList->cookieArray = $this->cookieArray;
+        return $bookList->myBookList();
+    }
+
+    /**
+     * 获取当前借阅图书
+     * @param int $searchType 搜索类型：1-题名；2-责任者；3-条码号
+     * @param string $searchContent 搜索内容
+     * @param int $page 页码
+     * @param int $rows 每页条数
+     * @param int $sortType 排序类型：0-默认；1-借阅时间；2-还书时间；3-逾期天数
+     * @param string|null $startDate 开始日期
+     * @param string|null $endDate 结束日期
+     * @return array
+     * @throws Exception
+     */
+    public function loanList(
+        int $searchType = 1,
+        string $searchContent = '',
+        int $page = 1,
+        int $rows = 10,
+        int $sortType = 0,
+        string $startDate = null,
+        string $endDate = null
+    ): array
+    {
+        $user = new User();
+        $user->cookie = $this->cookie;
+        $user->cookieArray = $this->cookieArray;
+        return $user->loanList($searchType, $searchContent, $page, $rows, $sortType, $startDate, $endDate);
+    }
+
+    /**
+     * 获取当前借阅现刊
+     * @param int $searchType 搜索类型：1-题名；4-ISSN
+     * @param string $searchContent 搜索内容
+     * @param int $page 页码
+     * @param int $rows 每页条数
+     * @param int $sortType 排序类型：0-默认
+     * @param string|null $startDate 开始日期
+     * @param string|null $endDate 结束日期
+     * @return array
+     * @throws Exception
+     */
+    public function issueLoanInfoList(
+        int $searchType = 1,
+        string $searchContent = '',
+        int $page = 1,
+        int $rows = 10,
+        int $sortType = 0,
+        string $startDate = null,
+        string $endDate = null
+    ): array
+    {
+        $user = new User();
+        $user->cookie = $this->cookie;
+        $user->cookieArray = $this->cookieArray;
+        return $user->issueLoanInfoList($searchType, $searchContent, $page, $rows, $sortType, $startDate, $endDate);
+    }
+
+    /**
+     * 获取借阅历史
+     * @param int $searchType 搜索类型：1-题名；2-责任者；3-条码号
+     * @param string $searchContent 搜索内容
+     * @param int $page 页码
+     * @param int $rows 每页条数
+     * @param int $sortType 排序类型：0-默认
+     * @param string|null $startDate 开始日期
+     * @param string|null $endDate 结束日期
+     * @return array
+     * @throws Exception
+     */
+    public function loanHistory(
+        int $searchType = 1,
+        string $searchContent = '',
+        int $page = 1,
+        int $rows = 10,
+        int $sortType = 0,
+        string $startDate = null,
+        string $endDate = null
+    ): array
+    {
+        $user = new User();
+        $user->cookie = $this->cookie;
+        $user->cookieArray = $this->cookieArray;
+        return $user->loanHistory($searchType, $searchContent, $page, $rows, $sortType, $startDate, $endDate);
+    }
+
+    /**
+     * 获取现刊借阅历史
+     * @param int $searchType 搜索类型：1-题名；4-ISSN
+     * @param string $searchContent 搜索内容
+     * @param int $page 页码
+     * @param int $rows 每页条数
+     * @param int $sortType 排序类型：0-默认
+     * @param string|null $startDate 开始日期
+     * @param string|null $endDate 结束日期
+     * @return array
+     * @throws Exception
+     */
+    public function issueLoanHistory(
+        int $searchType = 1,
+        string $searchContent = '',
+        int $page = 1,
+        int $rows = 10,
+        int $sortType = 0,
+        string $startDate = null,
+        string $endDate = null
+    ): array
+    {
+        $user = new User();
+        $user->cookie = $this->cookie;
+        $user->cookieArray = $this->cookieArray;
+        return $user->issueLoanHistory($searchType, $searchContent, $page, $rows, $sortType, $startDate, $endDate);
     }
 
 }
