@@ -2,128 +2,108 @@
 
 namespace Airmole\TjustbLibsp;
 
-use Airmole\TjustbOpacsys\Exception\Exception;
+use Airmole\TjustbLibsp\Exception\Exception;
 
 class Base
 {
-    /**
-     * @var string 默认libsp系统URL
-     */
+    /** @var string 默认libsp系统URL */
     public const DEFAULT_LIBSP_URL = 'https://findtjustb.libsp.cn';
 
-    /**
-     * @var string libsp系统超星统一登录认证服务URL
-     */
+    /** @var string libsp系统超星统一登录认证服务URL */
     public const LOGIN_SERVICE_URL = 'https://tyrzfw.chaoxing.com';
 
-    /**
-     * @var string libsp系统 URL域名
-     */
-    public string $libspUrl;
-    /**
-     * @var string 代理地址
-     */
-    public string $proxy;
-    /**
-     * @var string 配置文件路径
-     */
-    public string $configPath;
-
-    /**
-     * @var string 用户账号
-     */
-    public string $userCode;
-
-    /**
-     * @var string 用户已登录cookie
-     */
-    public string $cookie;
-
-    /**
-     * @var array 用户cookie数组
-     */
-    public array $cookieArray;
-
-    /**
-     * @var array 超星cookie数组
-     */
-    public array $chaoxingCookieArray;
-
-    /**
-     * @var int 默认请求成功响应代码
-     */
+    /** @var int 默认请求成功响应代码 */
     public const CODE_SUCCESS = 200;
 
-    /**
-     * @var int 默认请求重定向响应代码
-     */
+    /** @var int 默认请求重定向响应代码 */
     public const CODE_REDIRECT = 302;
+
+    /** @var string libsp系统URL域名 */
+    public string $libspUrl = '';
+
+    /** @var string 代理地址 */
+    public string $proxy = '';
+
+    /** @var string 配置文件路径 */
+    public string $configPath = '';
+
+    /** @var string 用户账号 */
+    public string $userCode = '';
+
+    /** @var string 用户已登录cookie */
+    public string $cookie = '';
+
+    /** @var array 用户cookie数组 */
+    public array $cookieArray = [];
+
+    /** @var array 超星cookie数组 */
+    public array $chaoxingCookieArray = [];
 
     public function __construct()
     {
-        // 设置默认配置文件
-        if (empty($this->configPath)) $this->setConfigPath();
-        // 未配置libsp URL 自动配置
-        if (empty($this->libspUrl)) $this->setLibspUrl();
-        // 设置代理
+        $this->initConfig();
+        $this->initLibspUrl();
         $this->proxy = $this->getConfig('LIBSP_PROXY', '');
-
-        // 获取cookie
         $this->getNewCookie();
     }
 
     /**
+     * 初始化配置路径
+     */
+    protected function initConfig(): void
+    {
+        if (empty($this->configPath)) {
+            $this->configPath = ($_SERVER['DOCUMENT_ROOT'] ?? '') . '/../.env';
+        }
+    }
+
+    /**
+     * 初始化 libsp URL
+     */
+    protected function initLibspUrl(): void
+    {
+        if (empty($this->libspUrl)) {
+            $this->libspUrl = $this->getConfig('LIBSP_URL', self::DEFAULT_LIBSP_URL) ?: self::DEFAULT_LIBSP_URL;
+        }
+    }
+
+    /**
      * 设置配置文件路径
-     * @param string $path
-     * @return void
      */
     public function setConfigPath(string $path = ''): void
     {
-        $defaultPath = $_SERVER['DOCUMENT_ROOT'] . '/../.env';
-        if ($path === '') $path = $defaultPath;
-        $this->configPath = $path;
+        $this->configPath = $path ?: (($_SERVER['DOCUMENT_ROOT'] ?? '') . '/../.env');
     }
 
     /**
      * 设置URL
-     * @param string $url
-     * @return void
      */
     public function setLibspUrl(string $url = self::DEFAULT_LIBSP_URL): void
     {
-        if (empty($url)) $url = self::DEFAULT_LIBSP_URL;
-        $configLibspUrl = $this->getConfig('LIBSP_URL', '');
-        if (!empty($configLibspUrl)) $url = $configLibspUrl;
-        $this->libspUrl = $url;
+        $configUrl = $this->getConfig('LIBSP_URL', '');
+        $this->libspUrl = !empty($configUrl) ? $configUrl : $url;
     }
 
     /**
      * 获取配置项
-     * @param string $key
-     * @param $default
-     * @param string $path
-     * @return string
      */
-    public function getConfig(string $key, $default = null, string $path = ''): string
+    public function getConfig(string $key, mixed $default = null, string $path = ''): mixed
     {
-        $configs = $this->configPath;
-        if (!file_exists($configs) && $path === '') return $default;
-        preg_match("/{$key}=(.*?)\n/", file_get_contents($configs), $matchedConfig);
-        if (empty($matchedConfig) && $path === '') return $default;
-        return $matchedConfig[1] ?: $default;
+        $configPath = $path ?: $this->configPath;
+        if (!file_exists($configPath)) return $default;
+
+        $content = file_get_contents($configPath);
+        if ($content === false) return $default;
+
+        if (preg_match("/^{$key}=(.*)$/m", $content, $matched)) {
+            $value = trim($matched[1]);
+            return $value !== '' ? $value : $default;
+        }
+        return $default;
     }
 
     /**
-     * HTTP请求
-     * @param string $method 请求方式
-     * @param string $url 请求URL
-     * @param mixed $body 请求体
-     * @param mixed $cookie Cookie
-     * @param array $headers 请求头
-     * @param bool $showHeaders 是否返回请求头
-     * @param bool $followLocation 是否跟随跳转
-     * @param int $timeout 超时时间
-     * @return array 响应结果
+     * 发送 HTTP 请求
      */
     public function httpRequest(
         string $method = 'GET',
@@ -151,22 +131,22 @@ class Base
             'Accept-Encoding: gzip, deflate, br, zstd',
             'Accept-Language: zh-CN,zh;q=0.9',
             'content-language: zh_CN',
-            "Origin: " . $this->libspUrl,
+            'Origin: ' . $this->libspUrl,
             'Sec-Fetch-Site: same-origin',
             'Sec-Fetch-Mode: cors',
             'Sec-Fetch-Dest: empty',
             'Content-Type: application/json;charset=UTF-8',
-            'Referer: https://findtjustb.libsp.cn/'
+            'Referer: ' . self::DEFAULT_LIBSP_URL . '/'
         ];
         $headers = array_merge($defaultHeaders, $headers);
 
         if (is_string($cookie) && !empty($cookie)) {
             $cookie = trim($cookie);
-            $headers[] = !str_starts_with($cookie, 'Cookie:') ? "Cookie: {$cookie}" : $cookie;
+            $headers[] = str_starts_with($cookie, 'Cookie:') ? $cookie : "Cookie: {$cookie}";
 
-            // 请求libsp系统cookie中携带有jwt值，则header需增加jwtOpacAuth
-            if (array_key_exists('jwt', $this->parseCookieString($cookie)) && str_contains($url, self::DEFAULT_LIBSP_URL)) {
-                $headers[] = "jwtOpacAuth: " . ($this->parseCookieString($cookie))['jwt'];
+            $cookieArr = $this->parseCookieString($cookie);
+            if (isset($cookieArr['jwt']) && str_contains($url, $this->libspUrl)) {
+                $headers[] = 'jwtOpacAuth: ' . $cookieArr['jwt'];
             }
         }
 
@@ -191,7 +171,9 @@ class Base
             $requestOptions[CURLOPT_POSTFIELDS] = is_array($body) ? json_encode($body) : $body;
         }
 
-        if (!empty($this->proxy)) $requestOptions[CURLOPT_PROXY] = $this->proxy;
+        if (!empty($this->proxy)) {
+            $requestOptions[CURLOPT_PROXY] = $this->proxy;
+        }
 
         $ch = curl_init();
         curl_setopt_array($ch, $requestOptions);
@@ -206,53 +188,76 @@ class Base
         }
 
         curl_close($ch);
-
         return ['code' => (int)$httpCode, 'data' => $response];
     }
 
     /**
-     * 从响应头中获取Cookie
-     * @param string $key Cookie名称
-     * @param string $headerString 响应头字符串
-     * @return string Cookie值
+     * 发送 JSON 请求并自动解析响应
+     *
+     * @throws Exception
+     */
+    public function requestJson(
+        string $method = 'GET',
+        string $url = '',
+        mixed  $body = '',
+        mixed  $cookie = '',
+        array  $headers = [],
+        bool   $showHeaders = false,
+        bool   $followLocation = false,
+        int    $timeout = 10,
+        string $errorMessage = '请求失败'
+    ): array
+    {
+        $result = $this->httpRequest($method, $url, $body, $cookie, $headers, $showHeaders, $followLocation, $timeout);
+
+        if ($result['code'] !== self::CODE_SUCCESS) {
+            throw new Exception("{$errorMessage}：HTTP {$result['code']}");
+        }
+
+        $data = json_decode($result['data'], true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new Exception("{$errorMessage}：JSON 解析失败");
+        }
+
+        return $data;
+    }
+
+    /**
+     * 从响应头中获取 Cookie
      */
     public function getCookieFromHeader(string $key, string $headerString = ''): string
     {
-        preg_match("/Set-Cookie: {$key}=(.*?);/", $headerString, $cookieValue);
-        return $cookieValue[1] ?? '';
+        if (preg_match("/Set-Cookie: {$key}=(.*?);/", $headerString, $cookieValue)) {
+            return $cookieValue[1];
+        }
+        return '';
     }
 
     /**
      * 从响应头中获取跳转地址
-     * @param string $header 响应头字符串
-     * @return string 跳转地址
      */
     public function getLocationFromRedirectHeader(string $header = ''): string
     {
-        preg_match('/Location: (.*)/', $header, $nextUrl);
-        $nextUrl = $nextUrl[1] ?? '';
-        return trim($nextUrl);
+        if (preg_match('/Location:\s*(.*)/', $header, $nextUrl)) {
+            return trim($nextUrl[1]);
+        }
+        return '';
     }
 
     /**
-     * 获取cookie
-     * @return string
+     * 获取 cookie
      */
     public function getNewCookie(): string
     {
         $headers = ["Referer: {$this->libspUrl}/"];
-        $result = $this->httpRequest('GET', '/find/findConfig/getMenuList','', '', $headers, true);
+        $result = $this->httpRequest('GET', '/find/findConfig/getMenuList', '', '', $headers, true);
         $cookie = $this->getCookieFromHeader('route', $result['data']);
-
         $this->insertCookie('route', $cookie);
         return $this->getCookieString();
     }
 
     /**
-     * 插入cookie
-     * @param string $key cookie名称
-     * @param string $value cookie值
-     * @return void
+     * 插入 cookie
      */
     public function insertCookie(string $key, string $value): void
     {
@@ -261,32 +266,31 @@ class Base
     }
 
     /**
-     * 获取Cookie字符串
-     * @param array $cookie Cookie数组
-     * @return string Cookie字符串
+     * 获取 Cookie 字符串
      */
     public function getCookieString(array $cookie = []): string
     {
-        if (empty($cookie)) $cookie = $this->cookieArray;
-        $tempArray = [];
-        foreach ($cookie as $key => $value) {
-            $tempArray[] = $key . '=' . $value;
+        if (empty($cookie)) {
+            $cookie = $this->cookieArray;
         }
-        return implode('; ', $tempArray);
+        return implode('; ', array_map(
+            fn($k, $v) => "{$k}={$v}",
+            array_keys($cookie),
+            array_values($cookie)
+        ));
     }
 
     /**
-     * 解析Cookie字符串
-     * @param string $cookieString Cookie字符串
-     * @return array Cookie数组
+     * 解析 Cookie 字符串
      */
     public function parseCookieString(string $cookieString = ''): array
     {
-        if (str_starts_with($cookieString, 'Cookie: ')) $cookieString = substr($cookieString, 8);
+        if (str_starts_with($cookieString, 'Cookie: ')) {
+            $cookieString = substr($cookieString, 8);
+        }
 
         $cookieArray = [];
-        $cookiePairs = explode(';', $cookieString);
-        foreach ($cookiePairs as $pair) {
+        foreach (explode(';', $cookieString) as $pair) {
             $pair = trim($pair);
             $pos = strpos($pair, '=');
             if ($pos === false) continue;
@@ -298,9 +302,7 @@ class Base
     }
 
     /**
-     * 解析Cookie数组
-     * @param array $cookie Cookie数组
-     * @return string Cookie字符串
+     * 解析 Cookie 数组
      */
     public function parseCookieArray(array $cookie = []): string
     {
@@ -310,10 +312,7 @@ class Base
     }
 
     /**
-     * 插入超星cookie
-     * @param string $key
-     * @param string $value
-     * @return void
+     * 插入超星 cookie
      */
     public function insertChaoxingCookie(string $key, string $value): void
     {
@@ -321,36 +320,33 @@ class Base
     }
 
     /**
-     * 获取超星Cookie字符串
-     * @param array $chaoxingCookieArray 超星Cookie数组
-     * @return string Cookie字符串
+     * 获取超星 Cookie 字符串
      */
     public function getChaoxingCookieString(array $chaoxingCookieArray = []): string
     {
-        if (empty($chaoxingCookieArray)) $chaoxingCookieArray = $this->chaoxingCookieArray;
-        $tempArray = [];
-        foreach ($chaoxingCookieArray as $key => $value) {
-            $tempArray[] = $key . '=' . $value;
+        if (empty($chaoxingCookieArray)) {
+            $chaoxingCookieArray = $this->chaoxingCookieArray;
         }
-        return implode('; ', $tempArray);
+        return implode('; ', array_map(
+            fn($k, $v) => "{$k}={$v}",
+            array_keys($chaoxingCookieArray),
+            array_values($chaoxingCookieArray)
+        ));
     }
 
     /**
-     * 解析unicode字符串
-     * @param string $str
-     * @return string
+     * 将 unicode 字符串转为 UTF-8
      */
-    function unicode2utf8(string $str): string
+    public function unicode2utf8(string $str): string
     {
-        if(!$str) return '';
+        if (!$str) return '';
         $decode = json_decode($str);
-        if($decode) return $decode;
+        if ($decode) return $decode;
         $str = '["' . $str . '"]';
         $decode = json_decode($str);
-        if(count($decode) == 1){
+        if (count($decode) == 1) {
             return $decode[0];
         }
         return $str;
     }
-
 }

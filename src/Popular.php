@@ -6,22 +6,42 @@ use Airmole\TjustbLibsp\Exception\Exception;
 
 class Popular extends Base
 {
-
+    /**
+     * 获取热门搜索
+     *
+     * @return array
+     * @throws Exception
+     */
     public function popularSearchSimple(): array
     {
-        $result = $this->httpRequest('GET', '/find/popularSearch/get?searchValue=0');
-
-        if ($result['code'] !== 200) throw new Exception('获取失败：' . $result['code'] . $result['data']);
-        return json_decode($result['data'], true);
+        return $this->requestJson('GET', '/find/popularSearch/get?searchValue=0', '', $this->cookie);
     }
 
+    /**
+     * 获取学科分类（disCode）列表
+     *
+     * @return array
+     * @throws Exception
+     */
     public function disCodeList(): array
     {
-        $result = $this->httpRequest('GET', '/find/index/getDiscipline?disCode=');
-        if ($result['code'] !== 200) throw new Exception('获取失败：' . $result['code'] . $result['data']);
-        return json_decode($result['data'], true);
+        return $this->requestJson('GET', '/find/index/getDiscipline?disCode=', '', $this->cookie);
     }
 
+    /**
+     * 获取热门借阅
+     *
+     * @param int $page 页码
+     * @param int $rows 每页条数
+     * @param string|null $disCode 学科分类
+     * @param int $statRange 统计范围天数
+     * @param int $indexFlag 是否首页请求
+     * @param string $libCode 图书馆代码
+     * @param int $sortType 排序方式
+     * @param string $classNo 分类号
+     * @return array
+     * @throws Exception
+     */
     public function getHotBorrow(
         int $page = 1,
         int $rows = 10,
@@ -34,22 +54,26 @@ class Popular extends Base
     ): array
     {
         $body = [
-            'libCode' => $libCode,
-            'disCode' => $disCode,
+            'libCode'   => $libCode,
+            'disCode'   => $disCode,
             'statRange' => $statRange,
-            'page' => $page,
-            'rows' => $rows,
-            'sortType' => $sortType,
+            'page'      => $page,
+            'rows'      => $rows,
+            'sortType'  => $sortType,
         ];
         if ($indexFlag == 1) $body['indexFlag'] = $indexFlag;
         if (!empty($classNo)) $body['classNo'] = $classNo;
-        $headers = ["Referer: {$this->libspUrl}/"];
 
-        $result = $this->httpRequest('POST', '/find/index/getHotLoan', $body, $this->cookie, $headers);
-        if ($result['code'] !== 200) throw new Exception('获取失败：' . $result['code'] . $result['data']);
-        return json_decode($result['data'], true);
+        $headers = ["Referer: {$this->libspUrl}/"];
+        return $this->requestJson('POST', '/find/index/getHotLoan', $body, $this->cookie, $headers);
     }
 
+    /**
+     * 获取最新图书
+     *
+     * @return array
+     * @throws Exception
+     */
     public function getNewBook(
         int $page = 1,
         int $rows = 10,
@@ -57,34 +81,31 @@ class Popular extends Base
         string $callNo = '',
         string $sortField = 'in_date',
         string $sortClause = 'desc',
-        string $time = "2",
+        string $time = '2',
         string $searchWord = '',
-        string $docCode = "1",
+        string $docCode = '1',
         array $campusId = [],
         string $libCode = '',
         string $locationId = '',
         string $opacSearchLangCode = ''
-    )
+    ): array
     {
         $body = [
-            'page' => $page,
-            'rows' => $rows,
-            'disCode' => $disCode,
-            'callNo' => $callNo,
-            'sortField' => $sortField,
-            'sortClause' => $sortClause,
-            'time' => $time,
-            'docCode' => $docCode,
-            'campusId' => $campusId,
-            'libCode' => $libCode,
-            'locationId' => $locationId,
+            'page'               => $page,
+            'rows'               => $rows,
+            'disCode'            => $disCode,
+            'callNo'             => $callNo,
+            'sortField'          => $sortField,
+            'sortClause'         => $sortClause,
+            'time'               => $time,
+            'docCode'            => $docCode,
+            'campusId'           => $campusId,
+            'libCode'            => $libCode,
+            'locationId'         => $locationId,
             'opacSearchLangCode' => $opacSearchLangCode,
-            'searchWord' => $searchWord
+            'searchWord'         => $searchWord,
         ];
         $headers = ["Referer: {$this->libspUrl}/"];
-        $result = $this->httpRequest('POST', '/find/index/getNewBook', $body, $this->cookie, $headers);
-        if ($result['code'] !== 200) throw new Exception('获取失败：' . $result['code'] . $result['data']);
-        return json_decode($result['data'], true);
+        return $this->requestJson('POST', '/find/index/getNewBook', $body, $this->cookie, $headers);
     }
-
 }
