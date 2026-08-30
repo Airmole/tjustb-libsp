@@ -95,6 +95,7 @@ class Libsp extends Base
     /**
      * 统一快速检索
      *
+     * @see https://gist.github.com/Airmole/07ae4007b7809b06fa1efb3df7ed5f79
      * @return array
      * @throws Exception
      */
@@ -152,6 +153,7 @@ class Libsp extends Base
     /**
      * 高级检索
      *
+     * @see https://gist.github.com/Airmole/d1d13aa562b7ddc0b96ae77c41eb2646
      * @return array
      * @throws Exception
      */
@@ -447,6 +449,7 @@ class Libsp extends Base
     /**
      * 获取用户信息（登录后）
      *
+     * @see https://gist.github.com/Airmole/3d75f1563f55cd12c11dfa5ca869a571
      * @param array $cookie Cookie 数组
      * @return array
      * @throws Exception
