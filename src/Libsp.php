@@ -853,4 +853,19 @@ class Libsp extends Base
         return $user->issueLoanHistory($searchType, $searchContent, $page, $rows, $sortType, $startDate, $endDate);
     }
 
+    /**
+     * 续借图书
+     * @see https://gist.github.com/Airmole/dfc2e78e878fa513c31fd8ef50f4d3b6
+     * @param array $loanIds 借阅ID数组
+     * @return array
+     * @throws Exception
+     */
+    public function renewBooks(array $loanIds): array
+    {
+        $user = new User();
+        $user->cookie = $this->cookie;
+        $user->cookieArray = $this->cookieArray;
+        return $user->renewBooks($loanIds);
+    }
+
 }

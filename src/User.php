@@ -229,4 +229,23 @@ class User extends Base
         return json_decode($result['data'], true);
     }
 
+    /**
+     * 续借
+     * @param array $loanIds 借阅ID数组
+     * @return array
+     * @throws Exception
+     */
+    public function renewBooks(array $loanIds): array
+    {
+        $body = [
+            'loanIds' => $loanIds,
+        ];
+
+        $url = '/find/lendbook/reNew';
+        $result = $this->httpRequest('POST', $url, $body, $this->cookie);
+
+        if ($result['code'] !== 200) throw new Exception('获取失败：' . $result['code'] . $result['data']);
+        return json_decode($result['data'], true);
+    }
+
 }
