@@ -6,11 +6,15 @@ use Airmole\TjustbLibsp\Exception\Exception;
 
 class Misc extends Base
 {
+    /**
+     * 获取数据字典
+     *
+     * @return array
+     * @throws Exception
+     */
     public function dict(): array
     {
         $headers = ["Referer: {$this->libspUrl}/"];
-        $result = $this->httpRequest('POST', '/find/groupResource/dict', '', $this->cookie, $headers);
-        if ($result['code'] !== 200) throw new Exception('获取失败：' . $result['code'] . $result['data']);
-        return json_decode($result['data'], true);
+        return $this->requestJson('POST', '/find/groupResource/dict', '', $this->cookie, $headers);
     }
 }

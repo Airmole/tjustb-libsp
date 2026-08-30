@@ -11,6 +11,7 @@ class Score extends Base
 {
     /**
      * 获取读者积分列表
+     *
      * @param int $page 页码
      * @param int $rows 每页条数
      * @param int|null $scoreSign 积分类型：null-全部；0-加分；1-减分
@@ -29,18 +30,14 @@ class Score extends Base
         string $timeType = null,
     ): array
     {
-        $post = [
-            'page' => $page,
-            'rows' => $rows,
+        $body = [
+            'page'      => $page,
+            'rows'      => $rows,
             'scoreSign' => $scoreSign,
             'startDate' => $startDate,
-            'endDate' => $endDate,
-            'timeType' => $timeType,
+            'endDate'   => $endDate,
+            'timeType'  => $timeType,
         ];
-        $url = '/find/patronScoreDetail/getPatronScoreList';
-        $result = $this->httpRequest('POST', $url, $post, $this->cookie);
-
-        if ($result['code'] !== 200) throw new Exception('获取失败：' . $result['code'] . $result['data']);
-        return json_decode($result['data'], true);
+        return $this->requestJson('POST', '/find/patronScoreDetail/getPatronScoreList', $body, $this->cookie);
     }
 }

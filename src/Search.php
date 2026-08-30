@@ -6,14 +6,24 @@ use Airmole\TjustbLibsp\Exception\Exception;
 
 class Search extends Base
 {
-    public function opacSearchPara()
+    /**
+     * 获取 OPAC 检索参数
+     *
+     * @return array
+     * @throws Exception
+     */
+    public function opacSearchPara(): array
     {
         $headers = ["Referer: {$this->libspUrl}/"];
-        $result = $this->httpRequest('GET', '/find/groupResource/getFindOpacSearchFieldParaList?', '', $this->cookie, $headers);
-        if ($result['code'] !== 200) throw new Exception('获取失败：' . $result['code'] . $result['data']);
-        return json_decode($result['data'], true);
+        return $this->requestJson('GET', '/find/groupResource/getFindOpacSearchFieldParaList', '', $this->cookie, $headers);
     }
 
+    /**
+     * 获取馆藏地点列表
+     *
+     * @return array
+     * @throws Exception
+     */
     public function locationList(
         int    $page = 1,
         int    $rows = 2000,
@@ -31,22 +41,30 @@ class Search extends Base
             'campusIds'         => $campusIds,
             'locationTypeCodes' => $locationTypeCodes,
             'entrust'           => $entrust,
-            'subscribe'         => $subscribe
+            'subscribe'         => $subscribe,
         ];
         $headers = ["Referer: {$this->libspUrl}/"];
-        $result = $this->httpRequest('POST', '/find/location/list', $body, $this->cookie, $headers);
-        if ($result['code'] !== 200) throw new Exception('获取失败：' . $result['code'] . $result['data']);
-        return json_decode($result['data'], true);
+        return $this->requestJson('POST', '/find/location/list', $body, $this->cookie, $headers);
     }
 
+    /**
+     * 获取检索条件列表
+     *
+     * @return array
+     * @throws Exception
+     */
     public function conditionList(): array
     {
         $headers = ["Referer: {$this->libspUrl}/"];
-        $result = $this->httpRequest('GET', '/find/category/getConditionList', '', $this->cookie, $headers);
-        if ($result['code'] !== 200) throw new Exception('获取失败：' . $result['code'] . $result['data']);
-        return json_decode($result['data'], true);
+        return $this->requestJson('GET', '/find/category/getConditionList', '', $this->cookie, $headers);
     }
 
+    /**
+     * 统一快速检索
+     *
+     * @return array
+     * @throws Exception
+     */
     public function search(
         string $searchFieldContent = '',
         string $searchField = 'keyWord',
@@ -54,7 +72,7 @@ class Search extends Base
         int    $rows = 10,
         array  $docCode = [],
         array  $litCode = [],
-        string $matchMode = "2",
+        string $matchMode = '2',
         array  $resourceType = [],
         array  $subject = [],
         array  $discode1 = [],
@@ -84,7 +102,7 @@ class Search extends Base
         array  $customSub = [],
         array  $customSub0 = [],
         int    $indexSearch = 1
-    )
+    ): array
     {
         $body = [
             'searchFieldContent' => $searchFieldContent,
@@ -122,21 +140,25 @@ class Search extends Base
             'newCoreInclude'     => $newCoreInclude,
             'customSub'          => $customSub,
             'customSub0'         => $customSub0,
-            'indexSearch'        => $indexSearch
+            'indexSearch'        => $indexSearch,
         ];
         $headers = ["Referer: {$this->libspUrl}/"];
-        $result = $this->httpRequest('POST', '/find/unify/search', $body, '', $headers);
-        if ($result['code'] !== 200) throw new Exception('获取失败：' . $result['code'] . $result['data']);
-        return json_decode($result['data'], true);
+        return $this->requestJson('POST', '/find/unify/search', $body, '', $headers);
     }
 
+    /**
+     * 高级检索
+     *
+     * @return array
+     * @throws Exception
+     */
     public function advancedSearch(
         array $searchItems = [],
         int $page = 1,
         int $rows = 10,
         array $docCode = [],
         array $litCode = [],
-        string $matchMode = "2",
+        string $matchMode = '2',
         array $resourceType = [],
         array $subject = [],
         array $discode1 = [],
@@ -189,7 +211,7 @@ class Search extends Base
             'langCode'           => $langCode,
             'countryCode'        => $countryCode,
             'publishBegin'       => $publishBegin,
-            'publishEnd'       => $publishEnd,
+            'publishEnd'         => $publishEnd,
             'coreInclude'        => $coreInclude,
             'ddType'             => $ddType,
             'verifyStatus'       => $verifyStatus,
@@ -199,14 +221,18 @@ class Search extends Base
             'onlyOnShelf'        => $onlyOnShelf,
             'searchFieldContent' => $searchFieldContent,
             'searchField'        => $searchField,
-            'isOpen'            => $isOpen
+            'isOpen'             => $isOpen,
         ];
         $headers = ["Referer: {$this->libspUrl}/"];
-        $result = $this->httpRequest('POST', '/find/unify/advancedSearch', $body, $this->cookie, $headers);
-        if ($result['code'] !== 200) throw new Exception('获取失败：' . $result['code'] . $result['data']);
-        return json_decode($result['data'], true);
+        return $this->requestJson('POST', '/find/unify/advancedSearch', $body, $this->cookie, $headers);
     }
 
+    /**
+     * 获取书目数量和封面
+     *
+     * @return array
+     * @throws Exception
+     */
     public function bookCountAndCover(
         int    $recordId,
         string $title = '',
@@ -216,50 +242,70 @@ class Search extends Base
         $body = [
             'recordId' => $recordId,
             'title'    => $title,
-            'isbn'     => $isbn
+            'isbn'     => $isbn,
         ];
         $headers = ["Referer: {$this->libspUrl}/"];
-        $result = $this->httpRequest('POST', '/find/unify/getPItemAndOnShelfCountAndDuxiuImageUrl', $body, $this->cookie, $headers);
-        if ($result['code'] !== 200) throw new Exception('获取失败：' . $result['code'] . $result['data']);
-        return json_decode($result['data'], true);
+        return $this->requestJson('POST', '/find/unify/getPItemAndOnShelfCountAndDuxiuImageUrl', $body, $this->cookie, $headers);
     }
 
+    /**
+     * 查询 docCode
+     *
+     * @return array
+     * @throws Exception
+     */
     public function docCode(int|string $recordId): array
     {
         $query = http_build_query(['recordId' => $recordId]);
         $headers = ["Referer: {$this->libspUrl}/"];
-        $result = $this->httpRequest('GET', "/find/searchResultDetail/getDocCode?{$query}", '', $this->cookie, $headers);
-        if ($result['code'] !== 200) throw new Exception('获取失败：' . $result['code'] . $result['data']);
-        return json_decode($result['data'], true);
+        return $this->requestJson('GET', "/find/searchResultDetail/getDocCode?{$query}", '', $this->cookie, $headers);
     }
 
+    /**
+     * 获取图书详情
+     *
+     * @return array
+     * @throws Exception
+     */
     public function bookDetail(int|string $recordId): array
     {
         $query = http_build_query(['recordId' => $recordId]);
         $headers = ["Referer: {$this->libspUrl}/"];
-        $result = $this->httpRequest('GET', "/find/searchResultDetail/getDetail?{$query}", '', $this->cookie, $headers);
-        if ($result['code'] !== 200) throw new Exception('获取失败：' . $result['code'] . $result['data']);
-        return json_decode($result['data'], true);
+        return $this->requestJson('GET', "/find/searchResultDetail/getDetail?{$query}", '', $this->cookie, $headers);
     }
 
+    /**
+     * 最近十年借阅数据
+     *
+     * @return array
+     * @throws Exception
+     */
     public function tenYearBorrow(int|string $recordId): array
     {
         $query = http_build_query(['recordId' => $recordId]);
         $headers = ["Referer: {$this->libspUrl}/"];
-        $result = $this->httpRequest('GET', "/find/loanInfo/getNearTenYearLoan?{$query}", '', $this->cookie, $headers);
-        if ($result['code'] !== 200) throw new Exception('获取失败：' . $result['code'] . $result['data']);
-        return json_decode($result['data'], true);
+        return $this->requestJson('GET', "/find/loanInfo/getNearTenYearLoan?{$query}", '', $this->cookie, $headers);
     }
 
+    /**
+     * 借阅分析
+     *
+     * @return array
+     * @throws Exception
+     */
     public function borrowAnalysis(int|string $recordId): array
     {
         $query = http_build_query(['recordId' => $recordId]);
         $headers = ["Referer: {$this->libspUrl}/"];
-        $result = $this->httpRequest('GET', "/find/searchResultDetail/getLoanAnalysis?{$query}", '', $this->cookie, $headers);
-        if ($result['code'] !== 200) throw new Exception('获取失败：' . $result['code'] . $result['data']);
-        return json_decode($result['data'], true);
+        return $this->requestJson('GET', "/find/searchResultDetail/getLoanAnalysis?{$query}", '', $this->cookie, $headers);
     }
 
+    /**
+     * 获取图书馆藏信息
+     *
+     * @return array
+     * @throws Exception
+     */
     public function bookCollectionInfo(
         int|string $recordId,
         int        $page = 1,
@@ -277,14 +323,18 @@ class Search extends Base
             'callNo'   => $callNo,
             'sortType' => $sortType,
             'isUnify'  => $isUnify,
-            'entrance' => $entrance
+            'entrance' => $entrance,
         ];
         $headers = ["Referer: {$this->libspUrl}/"];
-        $result = $this->httpRequest('POST', '/find/physical/groupitems', $body, $this->cookie, $headers);
-        if ($result['code'] !== 200) throw new Exception('获取失败：' . $result['code'] . $result['data']);
-        return json_decode($result['data'], true);
+        return $this->requestJson('POST', '/find/physical/groupitems', $body, $this->cookie, $headers);
     }
 
+    /**
+     * 搜索获取图书详情摘要 / 获取相关借阅图书
+     *
+     * @return array
+     * @throws Exception
+     */
     public function searchDetailAbstract(
         int|string $recordId,
         string $searchField = '',
@@ -298,26 +348,30 @@ class Search extends Base
     ): array
     {
         $body = [
-            'excludeFieldContent'              => $recordId,
-            'excludeField' => 'record_id',
-            'page'                  => $page,
-            'rows'                  => $rows,
-            'sortField' => $sortField,
-            'sortClause' => $sortClause,
+            'excludeFieldContent' => $recordId,
+            'excludeField'        => 'record_id',
+            'page'                => $page,
+            'rows'                => $rows,
+            'sortField'           => $sortField,
+            'sortClause'          => $sortClause,
         ];
         if (!empty($searchField)) $body['searchField'] = $searchField;
         if (!empty($searchFieldContent)) $body['searchFieldContent'] = $searchFieldContent;
         if (!empty($subject)) {
             $body['subject'] = $subject;
-            $body['kindNo'] = $kindNo;
+            $body['kindNo']  = $kindNo;
         }
 
         $headers = ["Referer: {$this->libspUrl}/"];
-        $result = $this->httpRequest('POST', '/find/unify/searchForDetail', $body, $this->cookie, $headers);
-        if ($result['code'] !== 200) throw new Exception('获取失败：' . $result['code'] . $result['data']);
-        return json_decode($result['data'], true);
+        return $this->requestJson('POST', '/find/unify/searchForDetail', $body, $this->cookie, $headers);
     }
 
+    /**
+     * 获取作者信息、论文期刊
+     *
+     * @return array
+     * @throws Exception
+     */
     public function searchAuthorInfo(
         string $author = '',
         string $fenlei = '',
@@ -327,23 +381,31 @@ class Search extends Base
         $query = http_build_query([
             'author' => $author,
             'fenlei' => $fenlei,
-            'size' => $size
+            'size'   => $size,
         ]);
         $headers = ["Referer: {$this->libspUrl}/"];
-        $result = $this->httpRequest('GET', "/find/searchResultDetail/getAuthorInfo?{$query}", '', $this->cookie, $headers);
-        if ($result['code'] !== 200) throw new Exception('获取失败：' . $result['code'] . $result['data']);
-        return json_decode($result['data'], true);
+        return $this->requestJson('GET', "/find/searchResultDetail/getAuthorInfo?{$query}", '', $this->cookie, $headers);
     }
 
+    /**
+     * 获取二维码跳转 URL
+     *
+     * @return array
+     * @throws Exception
+     */
     public function qrcodeJumpUrl(int|string $recordId, string $libCode = ''): array
     {
         $query = http_build_query(['recordId' => $recordId]);
         $headers = ["Referer: {$this->libspUrl}/"];
-        $result = $this->httpRequest('GET', "/find/searchResultDetail/getQrCodeJumpUrl?{$query}", '', $this->cookie, $headers);
-        if ($result['code'] !== 200) throw new Exception('获取失败：' . $result['code'] . $result['data']);
-        return json_decode($result['data'], true);
+        return $this->requestJson('GET', "/find/searchResultDetail/getQrCodeJumpUrl?{$query}", '', $this->cookie, $headers);
     }
 
+    /**
+     * 获取分类列表
+     *
+     * @return array
+     * @throws Exception
+     */
     public function categoryList(
         string $parentClassNo = 'A',
         int $classLev = 1,
@@ -352,13 +414,10 @@ class Search extends Base
     {
         $body = [
             'parentClassNo' => $parentClassNo,
-            'classLev' => $classLev,
-            'classCode' => $classCode
+            'classLev'      => $classLev,
+            'classCode'     => $classCode,
         ];
         $headers = ["Referer: {$this->libspUrl}/"];
-        $result = $this->httpRequest('POST', '/find/category/classifica/list', $body, $this->cookie, $headers);
-        if ($result['code'] !== 200) throw new Exception('获取失败：' . $result['code'] . $result['data']);
-        return json_decode($result['data'], true);
+        return $this->requestJson('POST', '/find/category/classifica/list', $body, $this->cookie, $headers);
     }
-
 }

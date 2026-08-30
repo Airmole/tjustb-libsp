@@ -7,82 +7,71 @@ use Airmole\TjustbLibsp\Exception\Exception;
 class User extends Base
 {
     /**
-     * @param string $userId
+     * 获取用户限制数据
+     *
+     * @param string $userId 用户ID
      * @return array
      * @throws Exception
      */
     public function userLimit(string $userId = ''): array
     {
-        $query = ['userId' => $userId];
-        $url = self::DEFAULT_LIBSP_URL . '/find/user/userLimit?' . http_build_query($query);
-        $result = $this->httpRequest('GET', $url, '', $this->cookie);
-        if ($result['code'] !== 200) throw new Exception('获取失败：' . $result['code'] . $result['data']);
-        return json_decode($result['data'], true);
+        $query = http_build_query(['userId' => $userId]);
+        $url = "/find/user/userLimit?{$query}";
+        return $this->requestJson('GET', $url, '', $this->cookie);
     }
 
     /**
+     * 获取用户信息
+     *
      * @return array
      * @throws Exception
      */
     public function getUserInfo(): array
     {
-        $url = '/find/userInfo/getUserInfo';
-
-        $result = $this->httpRequest('GET', $url, '', $this->cookie);
-
-        if ($result['code'] !== 200) throw new Exception('获取失败：' . $result['code'] . $result['data']);
-        return json_decode($result['data'], true);
+        return $this->requestJson('GET', '/find/userInfo/getUserInfo', '', $this->cookie);
     }
 
     /**
      * 获取每日推荐图书
+     *
      * @return array
      * @throws Exception
      */
     public function dailyRecommend(): array
     {
-        $url = '/find/subscribe/dailyRecommend';
-        $result = $this->httpRequest('GET', $url, '', $this->cookie);
-
-        if ($result['code'] !== 200) throw new Exception('获取失败：' . $result['code'] . $result['data']);
-        return json_decode($result['data'], true);
+        return $this->requestJson('GET', '/find/subscribe/dailyRecommend', '', $this->cookie);
     }
 
     /**
      * 获取借阅统计
+     *
      * @return array
      * @throws Exception
      */
     public function loanChart(): array
     {
-        $url = '/find/loanInfo/loanChart';
-        $result = $this->httpRequest('POST', $url, '{}', $this->cookie);
-
-        if ($result['code'] !== 200) throw new Exception('获取失败：' . $result['code'] . $result['data']);
-        return json_decode($result['data'], true);
+        return $this->requestJson('POST', '/find/loanInfo/loanChart', '{}', $this->cookie);
     }
 
     /**
      * 获取借阅规则
+     *
      * @return array
      * @throws Exception
      */
     public function userLoanRules(): array
     {
-        $url = '/find/userInfo/UserLoanRules';
-        $result = $this->httpRequest('POST', $url, '{}', $this->cookie);
-
-        if ($result['code'] !== 200) throw new Exception('获取失败：' . $result['code'] . $result['data']);
-        return json_decode($result['data'], true);
+        return $this->requestJson('POST', '/find/userInfo/UserLoanRules', '{}', $this->cookie);
     }
 
     /**
      * 获取当前借阅图书
+     *
      * @param int $searchType 搜索类型：1-题名；2-责任者；3-条码号
      * @param string $searchContent 搜索内容
      * @param int $page 页码
      * @param int $rows 每页条数
-     * @param int $sortType 排序类型：0-默认
+     * @param int $sortType 排序类型：0-默认；1-借阅时间；2-还书时间；3-逾期天数
      * @param string|null $startDate 开始日期
      * @param string|null $endDate 结束日期
      * @return array
@@ -99,23 +88,20 @@ class User extends Base
     ): array
     {
         $body = [
-            'searchType' => $searchType,
+            'searchType'    => $searchType,
             'searchContent' => $searchContent,
-            'page' => $page,
-            'rows' => $rows,
-            'sortType' => $sortType,
-            'startDate' => $startDate,
-            'endDate' => $endDate,
+            'page'          => $page,
+            'rows'          => $rows,
+            'sortType'      => $sortType,
+            'startDate'     => $startDate,
+            'endDate'       => $endDate,
         ];
-        $url = '/find/loanInfo/loanList';
-        $result = $this->httpRequest('POST', $url, $body, $this->cookie);
-
-        if ($result['code'] !== 200) throw new Exception('获取失败：' . $result['code'] . $result['data']);
-        return json_decode($result['data'], true);
+        return $this->requestJson('POST', '/find/loanInfo/loanList', $body, $this->cookie);
     }
 
     /**
      * 获取当前借阅现刊
+     *
      * @param int $searchType 搜索类型：1-题名；4-ISSN
      * @param string $searchContent 搜索内容
      * @param int $page 页码
@@ -136,25 +122,21 @@ class User extends Base
         string $endDate = null
     ): array
     {
-
         $body = [
-            'searchType' => $searchType,
+            'searchType'    => $searchType,
             'searchContent' => $searchContent,
-            'page' => $page,
-            'rows' => $rows,
-            'sortType' => $sortType,
-            'startDate' => $startDate,
-            'endDate' => $endDate,
+            'page'          => $page,
+            'rows'          => $rows,
+            'sortType'      => $sortType,
+            'startDate'     => $startDate,
+            'endDate'       => $endDate,
         ];
-        $url = '/find/loanInfo/getIssueLoanInfoList';
-        $result = $this->httpRequest('POST', $url, $body, $this->cookie);
-
-        if ($result['code'] !== 200) throw new Exception('获取失败：' . $result['code'] . $result['data']);
-        return json_decode($result['data'], true);
+        return $this->requestJson('POST', '/find/loanInfo/getIssueLoanInfoList', $body, $this->cookie);
     }
 
     /**
      * 获取借阅历史
+     *
      * @param int $searchType 搜索类型：1-题名；2-责任者；3-条码号
      * @param string $searchContent 搜索内容
      * @param int $page 页码
@@ -176,23 +158,20 @@ class User extends Base
     ): array
     {
         $body = [
-            'searchType' => $searchType,
+            'searchType'    => $searchType,
             'searchContent' => $searchContent,
-            'page' => $page,
-            'rows' => $rows,
-            'sortType' => $sortType,
-            'startDate' => $startDate,
-            'endDate' => $endDate,
+            'page'          => $page,
+            'rows'          => $rows,
+            'sortType'      => $sortType,
+            'startDate'     => $startDate,
+            'endDate'       => $endDate,
         ];
-        $url = '/find/loanInfo/loanHistoryList';
-        $result = $this->httpRequest('POST', $url, $body, $this->cookie);
-
-        if ($result['code'] !== 200) throw new Exception('获取失败：' . $result['code'] . $result['data']);
-        return json_decode($result['data'], true);
+        return $this->requestJson('POST', '/find/loanInfo/loanHistoryList', $body, $this->cookie);
     }
 
     /**
      * 获取现刊借阅历史
+     *
      * @param int $searchType 搜索类型：1-题名；4-ISSN
      * @param string $searchContent 搜索内容
      * @param int $page 页码
@@ -214,19 +193,27 @@ class User extends Base
     ): array
     {
         $body = [
-            'searchType' => $searchType,
+            'searchType'    => $searchType,
             'searchContent' => $searchContent,
-            'page' => $page,
-            'rows' => $rows,
-            'sortType' => $sortType,
-            'startDate' => $startDate,
-            'endDate' => $endDate,
+            'page'          => $page,
+            'rows'          => $rows,
+            'sortType'      => $sortType,
+            'startDate'     => $startDate,
+            'endDate'       => $endDate,
         ];
-        $url = '/find/loanInfo/getIssueLoanHistory';
-        $result = $this->httpRequest('POST', $url, $body, $this->cookie);
-
-        if ($result['code'] !== 200) throw new Exception('获取失败：' . $result['code'] . $result['data']);
-        return json_decode($result['data'], true);
+        return $this->requestJson('POST', '/find/loanInfo/getIssueLoanHistory', $body, $this->cookie);
     }
 
+    /**
+     * 续借图书
+     *
+     * @param array $loanIds 借阅ID数组
+     * @return array
+     * @throws Exception
+     */
+    public function renewBooks(array $loanIds): array
+    {
+        $body = ['loanIds' => $loanIds];
+        return $this->requestJson('POST', '/find/lendbook/reNew', $body, $this->cookie);
+    }
 }
