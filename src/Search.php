@@ -249,6 +249,30 @@ class Search extends Base
     }
 
     /**
+     * 获取封面
+     * @param int|string $recordId
+     * @param string $title
+     * @param string $isbn
+     * @return array
+     * @throws Exception
+     */
+    public function bookCover(
+        int|string $recordId,
+        string $title = '',
+        string $isbn = '',
+    ): array
+    {
+        $query = [
+            'recordId' => $recordId,
+            'title'    => $title,
+            'isbn'     => $isbn,
+        ];
+        $query = http_build_query($query);
+        $headers = ["Referer: {$this->libspUrl}/"];
+        return $this->requestJson('GET', "/find/book/getDuxiuImageUrl?{$query}", '', $this->cookie, $headers);
+    }
+
+    /**
      * 查询 docCode
      *
      * @return array
