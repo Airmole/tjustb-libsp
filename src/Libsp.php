@@ -219,6 +219,15 @@ class Libsp extends Base
         return $this->service(Search::class)->bookCountAndCover($recordId, $title, $isbn);
     }
 
+    public function bookCover(
+        int|string $recordId,
+        string $title = '',
+        string $isbn = '',
+    ): array
+    {
+        return $this->service(Search::class)->bookCover($recordId, $title, $isbn);
+    }
+
     /**
      * 查询 docCode
      *
