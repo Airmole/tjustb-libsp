@@ -205,6 +205,34 @@ class User extends Base
     }
 
     /**
+     * 导出借阅历史
+     *
+     * 上游接口响应为 xlsx 二进制文件流（Content-Type: application/octet-stream，
+     * Content-Disposition: attachment;filename=借阅历史.xlsx）
+     *
+     * @param int $sortType 排序类型：0-默认
+     * @param string $startDate 开始日期（如 2024-01-01，为空则不限制）
+     * @param string $endDate 结束日期（如 2024-12-31，为空则不限制）
+     * @return string xlsx 文件二进制内容
+     * @throws Exception
+     */
+    public function loanHistoryExport(int $sortType = 0, string $startDate = '', string $endDate = ''): string
+    {
+        $query = http_build_query([
+            'sortType'  => $sortType,
+            'startDate' => $startDate,
+            'endDate'   => $endDate,
+        ]);
+        $result = $this->httpRequest('GET', "/find/loanInfo/exportLoanHistoryList?{$query}", '', $this->cookie);
+
+        if ($result['code'] !== self::CODE_SUCCESS) {
+            throw new Exception("导出借阅历史失败：HTTP {$result['code']}");
+        }
+
+        return $result['data'];
+    }
+
+    /**
      * 续借图书
      *
      * @param array $loanIds 借阅ID数组

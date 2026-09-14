@@ -637,6 +637,19 @@ class Libsp extends Base
     }
 
     /**
+     * 借阅历史导出
+     * @param int $sortType
+     * @param string $startDate
+     * @param string $endDate
+     * @return string
+     * @throws Exception
+     */
+    public function loanHistoryExport(int $sortType = 0, string $startDate = '', string $endDate = '')
+    {
+        return $this->service(User::class)->loanHistoryExport($sortType, $startDate, $endDate);
+    }
+
+    /**
      * 续借图书
      *
      * @param array $loanIds 借阅ID数组
